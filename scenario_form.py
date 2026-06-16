@@ -91,7 +91,7 @@ if not st.session_state.submitted:
         
         # index=None forces initial value to be completely unselected
         q1 = st.radio("The interface layout allowed me to locate critical anomaly data without feeling overwhelmed.", list(likert_options.keys()), index=None, horizontal=True)
-        q2 = st.radio("I felt confident that my final triage classifications (True Positive vs. False Alarm) were accurate.", list(likert_options.keys()), index=None, horizontal=True)
+        q2 = st.radio("I felt confident in my decisions when selecting 'Confirm Threat' or 'False Alarm' for the flagged days.", list(likert_options.keys()), index=None, horizontal=True)
         q3 = st.radio("Navigating the dashboard's panels felt intuitive and seamless.", list(likert_options.keys()), index=None, horizontal=True)
         q4 = st.radio("I found myself second-guessing my decisions while utilizing this dashboard.", list(likert_options.keys()), index=None, horizontal=True)
         q5 = st.radio("The temporal anomaly plot and baseline indicators provided a clear view of the user's historical behavior.", list(likert_options.keys()), index=None, horizontal=True)
