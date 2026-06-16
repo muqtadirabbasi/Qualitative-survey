@@ -7,6 +7,7 @@ import streamlit as st
 def init_db():
     conn = sqlite3.connect("survey_results.db")
     cursor = conn.cursor()
+    # Cleaned schema: removed long text responses from the post-scenario table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS qualitative_responses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,11 +24,7 @@ def init_db():
             q7_shap_beeswarm INTEGER,
             q8_log_reduction INTEGER,
             q9_trust INTEGER,
-            q10_cognitive_effort INTEGER,
-            open_strategy TEXT,
-            open_friction TEXT,
-            open_trust TEXT,
-            open_expertise TEXT
+            q10_cognitive_effort INTEGER
         )
     """)
     conn.commit()
@@ -40,9 +37,8 @@ def save_responses(data):
         INSERT INTO qualitative_responses (
             soc_analyst_id, suspicious_user_id, expertise, interface_type,
             q1_layout, q2_confidence, q3_intuitive, q4_second_guess, q5_baseline,
-            q6_shap_waterfall, q7_shap_beeswarm, q8_log_reduction, q9_trust, q10_cognitive_effort,
-            open_strategy, open_friction, open_trust, open_expertise
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            q6_shap_waterfall, q7_shap_beeswarm, q8_log_reduction, q9_trust, q10_cognitive_effort
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, data)
     conn.commit()
     conn.close()
@@ -53,13 +49,12 @@ init_db()
 # ==========================================
 # 2. STREAMLIT INTERFACE CONFIGURATION
 # ==========================================
-st.set_page_config(page_title="XAI User Study: Qualitative Survey", layout="centered")
+st.set_page_config(page_title="XAI User Study: Post-Scenario Survey", layout="centered")
 
 st.title("Qualitative Evaluation Protocol")
 st.subheader("Post-Scenario Interface Assessment")
 st.markdown("---")
 
-# Session state tracker to handle submission visibility toggle
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
 
@@ -115,18 +110,10 @@ if not st.session_state.submitted:
 
         st.markdown("---")
         
-        # Post-Study Open-Ended Prompts
-        st.header("4. Diagnostic Strategy & Feedback")
-        open_strategy = st.text_area("Describe your step-by-step process for determining if a flagged day was a True Positive versus a False Alarm under this design. How did you investigate?", height=100)
-        open_friction = st.text_area("What was the most challenging or time-consuming part of triaging alerts using this specific layout?", height=100)
-        open_trust = st.text_area("Were there any scenarios where you disagreed with or felt confused by the indicators shown? If so, how did you resolve that conflict?", height=100)
-        open_expertise = st.text_area("Did you feel you needed deep, specialized cybersecurity domain knowledge to interpret the dashboard alerts effectively under this configuration? Why or why not?", height=100)
-        
         # Form Submission Button
-        submit_button = st.form_submit_button(label="Submit Evaluation Data")
+        submit_button = st.form_submit_button(label="Submit Scenario Responses")
         
         if submit_button:
-            # Compile values into structured tuple for database injection
             payload = (
                 int(soc_analyst_id), suspicious_user_id, expertise, interface_type,
                 likert_options[q1], likert_options[q2], likert_options[q3], likert_options[q4], likert_options[q5],
@@ -134,8 +121,7 @@ if not st.session_state.submitted:
                 likert_options[q7] if q7 else None,
                 likert_options[q8] if q8 else None,
                 likert_options[q9] if q9 else None,
-                likert_options[q10] if q10 else None,
-                open_strategy, open_friction, open_trust, open_expertise
+                likert_options[q10] if q10 else None
             )
             save_responses(payload)
             st.session_state.submitted = True
@@ -143,15 +129,15 @@ if not st.session_state.submitted:
 
 # Post-Submission Flow
 else:
-    st.success("Evaluation response recorded successfully!")
+    st.success("Scenario feedback logged successfully!")
     
-    if st.button("Log Next Scenario / Participant"):
+    if st.button("Proceed to Next Target Scenario"):
         st.session_state.submitted = False
         st.rerun()
         
     st.markdown("---")
     
-    # Secure Administrative Panel to safely download data from Streamlit Community Cloud
+    # Secure Administrative Panel
     with st.expander("🔑 Research Admin Data Extraction"):
         admin_password = st.text_input("Enter Admin Password to Download Data", type="password")
         
@@ -164,6 +150,6 @@ else:
                         file_name="user_study_qualitative_backup.db",
                         mime="application/octet-stream"
                     )
-                st.info("Reminder: Download this database file to your local computer at the end of active user study sessions to prevent data loss from cloud server resets.")
+                st.info("Download this backup at the end of your active evaluation blocks.")
             except FileNotFoundError:
-                st.error("Database file not generated yet. Submit a response first.")
+                st.error("No records found in database yet.")
