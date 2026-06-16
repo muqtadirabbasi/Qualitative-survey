@@ -7,7 +7,6 @@ import streamlit as st
 def init_db():
     conn = sqlite3.connect("survey_results.db")
     cursor = conn.cursor()
-    # Cleaned schema: removed long text responses from the post-scenario table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS qualitative_responses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,26 +54,30 @@ st.title("Qualitative Evaluation Protocol")
 st.subheader("Post-Scenario Interface Assessment")
 st.markdown("---")
 
+# Session state tracker to handle submission visibility toggle
 if "submitted" not in st.session_state:
     st.session_state.submitted = False
 
-# Render Input Form
+# Render Input Form Flow
 if not st.session_state.submitted:
+    
+    # CRITICAL FIX: Metadata is placed OUTSIDE the form so dropdown updates happen instantly
+    st.header("1. Participant & Scenario Metadata")
+    col1, col2 = st.columns(2)
+    with col1:
+        analyst_options = list(range(1, 33))
+        soc_analyst_id = st.selectbox("SOC Analyst ID", analyst_options)
+        expertise = st.selectbox("Expertise Cohort", ["Junior", "Senior"])
+    
+    with col2:
+        suspicious_user_options = ["User 93", "User 94", "User 17", "User 345", "User 400", "User 401", "User 102", "User 215"]
+        suspicious_user_id = st.selectbox("Suspicious User Audited", suspicious_user_options)
+        interface_type = st.selectbox("Evaluated Interface", ["Design_A", "Design_B"])
+    
+    st.markdown("---")
+    
+    # Core Question Evaluation Form
     with st.form("survey_form"):
-        # Metadata Block
-        st.header("1. Participant & Scenario Metadata")
-        col1, col2 = st.columns(2)
-        with col1:
-            analyst_options = list(range(1, 33))
-            soc_analyst_id = st.selectbox("SOC Analyst ID", analyst_options)
-            expertise = st.selectbox("Expertise Cohort", ["Junior", "Senior"])
-        
-        with col2:
-            suspicious_user_options = ["User 93", "User 94", "User 17", "User 345", "User 400", "User 401", "User 102", "User 215"]
-            suspicious_user_id = st.selectbox("Suspicious User Audited", suspicious_user_options)
-            interface_type = st.selectbox("Evaluated Interface", ["Design_A", "Design_B"])
-        
-        st.markdown("---")
         
         # Likert Mapping dictionary
         likert_options = {
@@ -94,7 +97,7 @@ if not st.session_state.submitted:
         q4 = st.radio("I found myself second-guessing my decisions while utilizing this dashboard.", list(likert_options.keys()), index=2, horizontal=True)
         q5 = st.radio("The temporal anomaly plot and baseline indicators provided a clear view of the user's historical behavior.", list(likert_options.keys()), index=2, horizontal=True)
         
-        # XAI Specific Section (Conditional Rendering based on drop-down choice)
+        # XAI Specific Section (This will now render instantly when Design_B is selected above)
         q6, q7, q8, q9, q10 = None, None, None, None, None
         
         if interface_type == "Design_B":
