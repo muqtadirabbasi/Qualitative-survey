@@ -61,7 +61,7 @@ if not st.session_state.post_submitted:
         
         st.markdown("---")
         st.header("3. Diagnostic Strategy & Final Feedback")
-        open_strategy = st.text_area("Describe your step-by-step process for determining if a flagged day was a True Positive versus a False Alarm. How did your strategy shift when SHAP plots were introduced?", height=120).strip()
+        open_strategy = st.text_area("Describe your step-by-step process for determining if a flagged day was a Confirm Threat versus a False Alarm. How did your strategy shift when SHAP plots were introduced?", height=120).strip()
         open_friction = st.text_area("What was the most challenging or time-consuming bottleneck when triaging alerts using the Traditional Baseline (Design A)?", height=120).strip()
         open_trust = st.text_area("Were there any scenarios where you disagreed with or felt confused by the feature attributions shown? How did you resolve that?", height=120).strip()
         open_expertise = st.text_area("Did you feel you needed deep, specialized cybersecurity domain knowledge to interpret the alerts effectively when using the SHAP assisted layout (Design B)? Why?", height=120).strip()
